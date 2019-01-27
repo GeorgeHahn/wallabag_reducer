@@ -160,6 +160,8 @@ namespace WallabagReducer.Net
             var wallabag_username = Environment.GetEnvironmentVariable("WALLABAG_USERNAME");
             var wallabag_password = Environment.GetEnvironmentVariable("WALLABAG_PASSWORD");
             var wallabag_poll_duration = int.Parse(Environment.GetEnvironmentVariable("WALLABAG_POLL_DURATION_SECONDS")) * 1000;
+            var database_file = Environment.GetEnvironmentVariable("DATABASE_FILE");
+            WallabagContext.database_file = database_file;
 
             WallabagClient client = new WallabagClient(new System.Uri(wallabag_url), wallabag_client_id, wallabag_client_secret);
             var tok = client.RequestTokenAsync(wallabag_username, wallabag_password);

@@ -6,11 +6,13 @@ namespace WallabagReducer.Net
 {
     public class WallabagContext : DbContext
     {
+        public static string database_file = "wallabag_reducer.sqlite3";
+
         public DbSet<HNArticle> ProcessedHNArticles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=wallabag_reducer.sqlite3");
+            optionsBuilder.UseSqlite($"Data Source={database_file}");
         }
     }
 
