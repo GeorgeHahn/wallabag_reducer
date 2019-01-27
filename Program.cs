@@ -140,10 +140,12 @@ namespace WallabagReducer.Net
             // Poll for new items & run them
             while (true)
             {
-                await Task.Delay(poll_duration);
                 var item = await client.GetItemAsync(maxWBId);
                 if (item == null)
+                {
+                    await Task.Delay(poll_duration);
                     continue;
+                }
                 using (var db = new WallabagContext())
                 {
                     await runOne(db, client, item);
