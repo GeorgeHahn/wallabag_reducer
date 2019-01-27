@@ -123,27 +123,32 @@ namespace WallabagReducer.Net
 
         static async Task run(WallabagClient client, int poll_duration)
         {
-            using (var db = new WallabagContext())
-            {
-                // Run all existing items
-                var list = await GetAllEntries(client);
-                list.ForEach(async item => await runOne(db, client, item));
-
-                // Get max Wallabag ID from list
-                var maxWBId = list.MaxBy(i => i.Id).First().Id + 1;
-                Console.WriteLine($"Next Wallabag ID: {maxWBId}");
-
-                // Poll for new items & run them
-                while (true)
+            // Run all existing items
+            var list = await GetAllEntries(client);
+            list.ForEach(async item => {
+                using (var db = new WallabagContext())
                 {
-                    await Task.Delay(poll_duration);
-                    var item = await client.GetItemAsync(maxWBId);
-                    if (item == null)
-                        continue;
                     await runOne(db, client, item);
-                    maxWBId++;
-                    Console.WriteLine($"Next Wallabag ID: {maxWBId}");
                 }
+            });
+
+            // Get max Wallabag ID from list
+            var maxWBId = list.MaxBy(i => i.Id).First().Id + 1;
+            Console.WriteLine($"Next Wallabag ID: {maxWBId}");
+
+            // Poll for new items & run them
+            while (true)
+            {
+                await Task.Delay(poll_duration);
+                var item = await client.GetItemAsync(maxWBId);
+                if (item == null)
+                    continue;
+                using (var db = new WallabagContext())
+                {
+                    await runOne(db, client, item);
+                }
+                maxWBId++;
+                Console.WriteLine($"Next Wallabag ID: {maxWBId}");
             }
         }
 
