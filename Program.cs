@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using MoreLinq;
 using wallabag.Api;
 using wallabag.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace WallabagReducer.Net
 {
@@ -160,8 +161,14 @@ namespace WallabagReducer.Net
             var wallabag_username = Environment.GetEnvironmentVariable("WALLABAG_USERNAME");
             var wallabag_password = Environment.GetEnvironmentVariable("WALLABAG_PASSWORD");
             var wallabag_poll_duration = int.Parse(Environment.GetEnvironmentVariable("WALLABAG_POLL_DURATION_SECONDS")) * 1000;
-            var database_file = Environment.GetEnvironmentVariable("DATABASE_FILE");
+            var database_file = Environment.GetEnvironmentVariable("DATABASE_FILE") ?? "wallabag_reducer.sqlite3";
             WallabagContext.database_file = database_file;
+
+            // Create DB & run any necessary migrations
+            using (var db = new WallabagContext())
+            {
+                db.Database.Migrate();
+            }
 
             WallabagClient client = new WallabagClient(new System.Uri(wallabag_url), wallabag_client_id, wallabag_client_secret);
             var tok = client.RequestTokenAsync(wallabag_username, wallabag_password);
