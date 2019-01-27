@@ -113,7 +113,7 @@ namespace WallabagReducer.Net
                 if (hn != null)
                 {
                     db.ProcessedHNArticles.Add(hn);
-                    var count = db.SaveChanges();
+                    var count = await db.SaveChangesAsync();
                     Console.WriteLine("{0} HN records saved to database", count);
                 }
             }
