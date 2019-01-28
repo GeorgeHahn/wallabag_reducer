@@ -1,3 +1,5 @@
+[![pipeline status](https://gitlab.com/GeorgeHahn/wallabag_reducer/badges/master/pipeline.svg)](https://gitlab.com/GeorgeHahn/wallabag_reducer/commits/master)
+
 # Wallabag Reducer
 
 A tool for automatically organizing Wallabag entries.
