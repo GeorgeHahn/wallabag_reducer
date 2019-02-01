@@ -10,6 +10,8 @@ COPY . ./
 RUN dotnet ef database update
 RUN dotnet publish -c Release -o out
 
+ENV DATA_DIR=/config
+
 FROM microsoft/dotnet:2.2-runtime AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
