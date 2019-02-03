@@ -121,7 +121,7 @@ namespace WallabagReducer.Net
                 username = Environment.GetEnvironmentVariable("WALLABAG_USERNAME"),
                 password = Environment.GetEnvironmentVariable("WALLABAG_PASSWORD"),
                 poll_duration = int.Parse(Environment.GetEnvironmentVariable("WALLABAG_POLL_DURATION_SECONDS") ?? "60") * 1000,
-                data_dir = Environment.GetEnvironmentVariable("DATA_DIR") ?? "",
+                data_dir = Environment.GetEnvironmentVariable("DATA_DIR") ?? "/config",
                 database_file = "wallabag_reducer.sqlite3",
                 config_file = "config.json"
             };
