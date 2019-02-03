@@ -1,0 +1,11 @@
+{
+    "GenericTagProcessor":
+    {
+        "tag_mapping": [
+            {
+                "domain": "goodreads.com",
+                "tag": "goodreads"
+            }
+        ]
+    }
+}

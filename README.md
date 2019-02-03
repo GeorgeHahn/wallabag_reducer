@@ -17,7 +17,7 @@ Example docker-compose:
 wallabag_reducer:
   image: registry.gitlab.com/georgehahn/wallabag_reducer:latest
   volumes:
-    - ./wallabag_reducer:/database
+    - ./wallabag_reducer:/config
   environment:
     - WALLABAG_URL=http://<wallabag_url>
     - WALLABAG_CLIENT_ID=
@@ -25,5 +25,8 @@ wallabag_reducer:
     - WALLABAG_USERNAME=
     - WALLABAG_PASSWORD=
     - WALLABAG_POLL_DURATION_SECONDS=60
-    - DATABASE_FILE=/database/wallabag_reducer.sqlite3
 ```
+
+# Changelog
+
+See [CHANGELOG.md](CHANGELOG.md)

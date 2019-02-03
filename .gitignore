@@ -35,3 +35,6 @@ msbuild.wrn
 
 # Database
 wallabag_reducer.sqlite3
+
+# Config
+config.json
