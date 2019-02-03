@@ -92,19 +92,19 @@ namespace WallabagReducer.Net
 
             public bool Validate()
             {
-                if(!string.IsNullOrWhiteSpace(url)) {
+                if(string.IsNullOrWhiteSpace(url)) {
                     throw new Exception("WALLABAG_URL not set");
                 }
-                if(!string.IsNullOrWhiteSpace(client_id)) {
+                if(string.IsNullOrWhiteSpace(client_id)) {
                     throw new Exception("WALLABAG_CLIENT_ID not set");
                 }
-                if(!string.IsNullOrWhiteSpace(client_secret)) {
+                if(string.IsNullOrWhiteSpace(client_secret)) {
                     throw new Exception("WALLABAG_CLIENT_SECRET not set");
                 }
-                if(!string.IsNullOrWhiteSpace(username)) {
+                if(string.IsNullOrWhiteSpace(username)) {
                     throw new Exception("WALLABAG_USERNAME not set");
                 }
-                if(!string.IsNullOrWhiteSpace(password)) {
+                if(string.IsNullOrWhiteSpace(password)) {
                     throw new Exception("WALLABAG_PASSWORD not set");
                 }
                 return true;
