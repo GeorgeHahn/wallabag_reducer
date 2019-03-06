@@ -23,7 +23,7 @@ namespace WallabagReducer.Net
             return _regex;
         }
 
-        public bool should_run { get; set; } = false;
+        public bool should_run { get; set; } = true;
 
         async Task<HNArticle> Extract_HN_article(WallabagClient client, WallabagItem item)
         {
