@@ -2,15 +2,38 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Net.Http;
 
+using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using wallabag.Api;
 using wallabag.Api.Models;
+using Xunit;
 
 namespace WallabagReducer.Net
 {
-    class HNProcessor : IProcessor
+    public class HNProcessorTests
+    {
+        [Fact]
+        public async Task StoryLinks_Extract_Correctly()
+        {
+            var p = new HNProcessor();
+            var storylink = await p.Extract_story_link("https://news.ycombinator.com/item?id=19810504");
+            Assert.Equal("https://m.stopa.io/risp-lisp-in-rust-90a0dad5b116", storylink);
+        }
+
+        [Fact]
+        public async Task SelfLinks_Extract_Correctly()
+        {
+            var p = new HNProcessor();
+            var storylink = await p.Extract_story_link("https://news.ycombinator.com/item?id=19822801");
+            // Assert.Equal("item?id=19822801", storylink);
+            Assert.Null(storylink);
+        }
+    }
+
+    public class HNProcessor : IProcessor
     {
         Regex _regex;
         Regex regex()
@@ -25,43 +48,70 @@ namespace WallabagReducer.Net
 
         public bool should_run { get; set; } = true;
 
-        async Task<HNArticle> Extract_HN_article(WallabagClient client, WallabagItem item)
+        private HttpClient fetcher = new HttpClient();
+
+        public async Task<string> Extract_story_link(string uri)
+        {
+            string responseBody = await fetcher.GetStringAsync(uri);
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(responseBody);
+            var node = doc
+                .DocumentNode
+                .SelectSingleNode("//a[contains(@class, 'storylink')]");
+
+            // Ignore no match posts
+            if (node == null)
+                return null;
+
+            var value = node.Attributes["href"].Value;
+
+            // Ignore self posts (link back to the same story)
+            if (uri.Contains(value))
+                return null;
+
+            return value;
+        }
+
+        public async Task<HNArticle> Extract_HN_article(WallabagClient client, WallabagItem item)
         {
             // Not a HN article
             if (!item.Url.Contains("news.ycombinator"))
                 return null;
-            // Not scraped correctly?
-            if (item.Content == null)
-                return null;
 
-            // Search for HN storylink
-            var matches = regex().Matches(item.Content);
-            // Ignore no match posts (Ask HN, etc)
-            if (matches.Count == 0 || matches[0].Groups.Count <= 1)
-                return null;
-            var content_url = matches[0].Groups[1].Value;
-            // Ignore self HN posts
-            if (content_url.Contains("news.ycombinator"))
-                return null;
-
-            Console.Write($"Adding {content_url}");
-            WallabagItem newItem = await client.AddAsync(
-                new Uri(content_url),
-                tags: new string[] { "hacker-news" }
-            );
-            Console.WriteLine(" ✓");
-            if (newItem.Url != content_url)
+            try
             {
-                Console.WriteLine($"URLs don't match: {content_url} {newItem.Url}");
+                string content_url = await Extract_story_link(item.Url);
+
+                // Ignore no match posts
+                if (content_url == null)
+                    return null;
+
+                Console.Write($"Adding {content_url}");
+                WallabagItem newItem = await client.AddAsync(
+                    new Uri(content_url),
+                    tags: new string[] { "hacker-news" }
+                );
+                Console.WriteLine(" ✓");
+                if (newItem.Url != content_url)
+                {
+                    Console.WriteLine($"URLs don't match: {content_url} {newItem.Url}");
+                }
+
+                return new HNArticle
+                {
+                    SourceWBId = item.Id,
+                    SourceUrl = item.Url,
+                    ContentWBId = newItem.Id,
+                    ContentUrl = content_url
+                };
             }
-
-            return new HNArticle
+            catch(HttpRequestException e)
             {
-                SourceWBId = item.Id,
-                SourceUrl = item.Url,
-                ContentWBId = newItem.Id,
-                ContentUrl = content_url
-            };
+                Console.WriteLine("\nException Caught!");
+                Console.WriteLine("Message :{0} ",e.Message);
+            }
+            return null;
         }
 
         public async Task Process(WallabagClient client, WallabagItem item)
