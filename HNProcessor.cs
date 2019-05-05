@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Net.Http;
 
-using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using wallabag.Api;
@@ -33,41 +32,38 @@ namespace WallabagReducer.Net
         }
     }
 
-    public class HNProcessor : IProcessor
+    class HNApi
     {
-        Regex _regex;
-        Regex regex()
-        {
-            if (_regex == null)
-            {
-                _regex = new Regex("<a href=\"([a-z]{2,6}://[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b[-a-zA-Z0-9@:%_\\+.~#?&//=]*)\"[^>]*class=\"storylink\">",
-                                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            }
-            return _regex;
-        }
+        public long id { get; set; }
+        public string title { get; set; }
+        public int points { get; set; }
+        public string user { get; set; }
+        public long time { get; set; }
+        public string time_ago { get; set; }
+        public string type { get; set; }
+        public string content { get; set; }
+        // public dynamic comments { get; set; }
+        public int comments_count { get; set; }
+        public string url { get; set; }
+        public string domain { get; set; }
+    }
 
-        public bool should_run { get; set; } = true;
+    public class HNProcessor : IProcessor
+    {        public bool should_run { get; set; } = true;
 
         private HttpClient fetcher = new HttpClient();
 
-        public async Task<string> Extract_story_link(string uri)
+        public async Task<string> Extract_story_link(string thread)
         {
-            string responseBody = await fetcher.GetStringAsync(uri);
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(responseBody);
-            var node = doc
-                .DocumentNode
-                .SelectSingleNode("//a[contains(@class, 'storylink')]");
-
-            // Ignore no match posts
-            if (node == null)
-                return null;
-
-            var value = node.Attributes["href"].Value;
+            // TODO: Proper HN URL parsing
+            string hn_id = thread.Replace("https://news.ycombinator.com/item?id=", "");
+            string apiurl = $"https://api.hnpwa.com/v0/item/{hn_id}.json";
+            string responseBody = await fetcher.GetStringAsync(apiurl);
+            var js = JObject.Parse(responseBody).ToObject<HNApi>();
+            var value = js.url;
 
             // Ignore self posts (link back to the same story)
-            if (uri.Contains(value))
+            if (thread.Contains(value))
                 return null;
 
             return value;
