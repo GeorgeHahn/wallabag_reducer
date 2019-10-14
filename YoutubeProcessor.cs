@@ -91,9 +91,9 @@ namespace WallabagReducer.Net
             }
 
             // Already tagged
-            if (item.Tags.Any(t => t.Label == config.tag_name)) {
-                return;
-            }
+            // if (item.Tags.Any(t => t.Label == config.tag_name)) {
+            //     return;
+            // }
 
             Console.Write(item.Title.Replace("\n", " "));
 
