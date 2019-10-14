@@ -7,5 +7,14 @@
                 "tag": "goodreads"
             }
         ]
+    },
+    "YoutubeDownloader": {
+        "url_filter": [
+            "youtube.com",
+            "media.ccc.de"
+        ],
+        "mark_read": true,
+        "tag_name": "video",
+        "youtube_dl_server": "https://127.0.0.1:8080/youtube-dl/q"
     }
 }

@@ -7,6 +7,7 @@ A tool for automatically organizing Wallabag entries.
 # Features
 
  - Tag entries from certain websites (currently only Goodreads)
+ - Automatically send video links to [youtube-dl-server](https://github.com/manbearwiz/youtube-dl-server)
  - Add stories from Hacker News entries
 
 # Docker
