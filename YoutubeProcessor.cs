@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json.Linq;
 using wallabag.Api;
@@ -19,6 +20,8 @@ namespace WallabagReducer.Net
         public bool should_run { get; set; } = true;
 
         private HttpClient fetcher = new HttpClient();
+
+        private Regex ytregex = new Regex("www.youtube\\.com\\/oembed\\?.*url=(.*)");
 
         class Config
         {
@@ -56,10 +59,18 @@ namespace WallabagReducer.Net
 
             Console.Write(item.Title.Replace("\n", " "));
 
+            // Extract youtube url from the oembed url that wallabag gives
+            var url = item.Url;
+            var match = ytregex.Match(url);
+            if (match.Success) {
+                url = match.Captures[0].Value;
+                Console.WriteLine("Transformed youtube oembed url");
+            }
+
             // Send DL request to Youtube-DL-Server
             var content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("url", item.Url),
+                new KeyValuePair<string, string>("url", url),
                 new KeyValuePair<string, string>("format", "bestvideo"),
             });
             var dl_request = await fetcher.PostAsync(config.youtube_dl_server, content);
