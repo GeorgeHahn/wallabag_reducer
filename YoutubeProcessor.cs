@@ -19,15 +19,15 @@ namespace WallabagReducer.Net
         {
             var p = new YoutubeDownloader();
             var storylink = p.Extract_yt_oembed("https://www.youtube.com/oembed?format=xml&url=https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ");
-            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ", storylink);
+            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw", storylink);
         }
 
         [Fact]
-        public void Non_Oembed_Isnt_Transformed()
+        public void List_Transformed_Correctly()
         {
             var p = new YoutubeDownloader();
             var storylink = p.Extract_yt_oembed("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ");
-            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ", storylink);
+            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw", storylink);
         }
     }
 
@@ -41,7 +41,7 @@ namespace WallabagReducer.Net
 
         private HttpClient fetcher = new HttpClient();
 
-        private Regex ytregex = new Regex("www.youtube\\.com\\/oembed\\?.*url=(.*)");
+        private Regex ytregex = new Regex("(https:\\/\\/www\\.youtube\\.com\\/watch\\?v=[_a-zA-Z0-9]*)");
 
         class Config
         {
