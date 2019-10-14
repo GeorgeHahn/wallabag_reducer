@@ -49,7 +49,8 @@ namespace WallabagReducer.Net
     }
 
     public class HNProcessor : IProcessor
-    {        public bool should_run { get; set; } = true;
+    {
+        public bool should_run { get; set; } = true;
 
         private HttpClient fetcher = new HttpClient();
 

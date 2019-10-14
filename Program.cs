@@ -162,7 +162,8 @@ namespace WallabagReducer.Net
             // Prep processors
             var processors = new IProcessor[] {
                 new HNProcessor(),
-                new GenericTagProcessor(processorConfig)
+                new GenericTagProcessor(processorConfig),
+                new YoutubeDownloader(processorConfig),
             };
 
             var ex = run(client, processors, appConfig.poll_duration);
