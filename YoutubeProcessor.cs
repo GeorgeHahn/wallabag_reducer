@@ -49,6 +49,7 @@ namespace WallabagReducer.Net
             public bool mark_read { get; set; }
             public string tag_name { get; set; }
             public string youtube_dl_server { get; set; }
+            public string format { get; set; }
         }
 
         public YoutubeDownloader()
@@ -102,7 +103,7 @@ namespace WallabagReducer.Net
             var content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("url", url),
-                new KeyValuePair<string, string>("format", "(\"bestvideo[width>=1920]\"/bestvideo)+bestaudio/best"),
+                new KeyValuePair<string, string>("format", config.format),
             });
             var dl_request = await fetcher.PostAsync(config.youtube_dl_server, content);
             if (dl_request.StatusCode != System.Net.HttpStatusCode.OK) {

@@ -13,6 +13,7 @@
             "youtube.com",
             "media.ccc.de"
         ],
+        "format": "bestvideo",
         "mark_read": true,
         "tag_name": "video",
         "youtube_dl_server": "http://127.0.0.1:8080/youtube-dl/q"
