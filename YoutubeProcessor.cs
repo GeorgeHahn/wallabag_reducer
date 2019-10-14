@@ -29,6 +29,14 @@ namespace WallabagReducer.Net
             var storylink = p.Extract_yt_oembed("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ");
             Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw", storylink);
         }
+
+        [Fact]
+        public void Dash_Transformed_Correctly()
+        {
+            var p = new YoutubeDownloader();
+            var storylink = p.Extract_yt_oembed("http://www.youtube.com/oembed?format=xml&url=https://www.youtube.com/watch?v=a2Nv-KJyqPk");
+            Assert.Equal("https://www.youtube.com/watch?v=a2Nv-KJyqPk", storylink);
+        }
     }
 
     /// Send pages on given domains to youtube-dl-server
@@ -41,7 +49,7 @@ namespace WallabagReducer.Net
 
         private HttpClient fetcher = new HttpClient();
 
-        private Regex ytregex = new Regex("(https:\\/\\/www\\.youtube\\.com\\/watch\\?v=[_a-zA-Z0-9]*)");
+        private Regex ytregex = new Regex("(https:\\/\\/www\\.youtube\\.com\\/watch\\?v=[\\-_a-zA-Z0-9]*)");
 
         class Config
         {
