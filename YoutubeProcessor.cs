@@ -102,7 +102,7 @@ namespace WallabagReducer.Net
             var content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("url", url),
-                new KeyValuePair<string, string>("format", "bestvideo"),
+                new KeyValuePair<string, string>("format", "(\"bestvideo[width>=1920]\"/bestvideo)+bestaudio/best"),
             });
             var dl_request = await fetcher.PostAsync(config.youtube_dl_server, content);
             if (dl_request.StatusCode != System.Net.HttpStatusCode.OK) {
