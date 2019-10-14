@@ -8,9 +8,29 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using wallabag.Api;
 using wallabag.Api.Models;
+using Xunit;
 
 namespace WallabagReducer.Net
 {
+    public class YoutubeProcessorTests
+    {
+        [Fact]
+        public void Youtube_Oembed_Transforms_Correctly()
+        {
+            var p = new YoutubeDownloader();
+            var storylink = p.Extract_yt_oembed("https://www.youtube.com/oembed?format=xml&url=https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ");
+            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ", storylink);
+        }
+
+        [Fact]
+        public void Non_Oembed_Isnt_Transformed()
+        {
+            var p = new YoutubeDownloader();
+            var storylink = p.Extract_yt_oembed("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ");
+            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ", storylink);
+        }
+    }
+
     /// Send pages on given domains to youtube-dl-server
     /// See: https://github.com/manbearwiz/youtube-dl-server
     class YoutubeDownloader : IProcessor
@@ -31,9 +51,26 @@ namespace WallabagReducer.Net
             public string youtube_dl_server { get; set; }
         }
 
+        public YoutubeDownloader()
+        {
+            this.config = new Config();
+        }
+
         public YoutubeDownloader(JObject config)
         {
             this.config = config["YoutubeDownloader"].ToObject<Config>();
+        }
+
+        // Extract youtube url from the oembed url that wallabag gives
+        // Workaround for https://github.com/wallabag/wallabag/issues/3638
+        public string Extract_yt_oembed(string url)
+        {
+            var match = ytregex.Match(url);
+            if (match.Success && match.Groups.Count == 2) {
+                return match.Groups[1].Value;
+            } else {
+                return url;
+            }
         }
 
         public async Task Process(WallabagClient client, WallabagItem item)
@@ -59,13 +96,7 @@ namespace WallabagReducer.Net
 
             Console.Write(item.Title.Replace("\n", " "));
 
-            // Extract youtube url from the oembed url that wallabag gives
-            var url = item.Url;
-            var match = ytregex.Match(url);
-            if (match.Success) {
-                url = match.Captures[0].Value;
-                Console.WriteLine("Transformed youtube oembed url");
-            }
+            var url = this.Extract_yt_oembed(item.Url);
 
             // Send DL request to Youtube-DL-Server
             var content = new FormUrlEncodedContent(new[]
@@ -74,6 +105,10 @@ namespace WallabagReducer.Net
                 new KeyValuePair<string, string>("format", "bestvideo"),
             });
             var dl_request = await fetcher.PostAsync(config.youtube_dl_server, content);
+            if (dl_request.StatusCode != System.Net.HttpStatusCode.OK) {
+                Console.WriteLine($" ✗ yt-dl-server returned error response");
+                return;
+            }
             var response = await dl_request.Content.ReadAsStringAsync();
             Console.WriteLine(response);
 
