@@ -99,18 +99,17 @@ namespace WallabagReducer.Net
                     if(url == null) {
                         Console.WriteLine($"Warning: YoutubeProcessor detected blacklisted pattern; skipping {oldurl}");
                     } else {
-                        Console.WriteLine($"Warning: YoutubeProcessor detected blacklisted pattern; extracted {url} from {oldurl}");
+                        Console.WriteLine($"Info: YoutubeProcessor detected blacklisted pattern; extracted {url} from {oldurl}");
                     }
 
                     return;
                 }
             }
 
-            // TODO: Remove this hack once yt-dl-server is stable
             // Already tagged
-            // if (item.Tags.Any(t => t.Label == config.tag_name)) {
-            //     return;
-            // }
+            if (item.Tags.Any(t => t.Label == config.tag_name)) {
+                return;
+            }
 
             Console.Write(item.Title.Replace("\n", " "));
 
@@ -128,7 +127,6 @@ namespace WallabagReducer.Net
                     return;
                 }
                 var response = await dl_request.Content.ReadAsStringAsync();
-                Console.WriteLine(response);
 
                 await client.AddTagsAsync(item, new[] { config.tag_name });
 
