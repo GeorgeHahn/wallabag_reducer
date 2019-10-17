@@ -12,33 +12,6 @@ using Xunit;
 
 namespace WallabagReducer.Net
 {
-    public class YoutubeProcessorTests
-    {
-        [Fact]
-        public void Youtube_Oembed_Transforms_Correctly()
-        {
-            var p = new YoutubeDownloader();
-            var storylink = p.Extract_yt_oembed("https://www.youtube.com/oembed?format=xml&url=https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ");
-            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw", storylink);
-        }
-
-        [Fact]
-        public void List_Transformed_Correctly()
-        {
-            var p = new YoutubeDownloader();
-            var storylink = p.Extract_yt_oembed("https://www.youtube.com/watch?v=_uFyp1WS1Fw&list=FL_vCZnb8HaQ-X02g6dSzBlQ");
-            Assert.Equal("https://www.youtube.com/watch?v=_uFyp1WS1Fw", storylink);
-        }
-
-        [Fact]
-        public void Dash_Transformed_Correctly()
-        {
-            var p = new YoutubeDownloader();
-            var storylink = p.Extract_yt_oembed("http://www.youtube.com/oembed?format=xml&url=https://www.youtube.com/watch?v=a2Nv-KJyqPk");
-            Assert.Equal("https://www.youtube.com/watch?v=a2Nv-KJyqPk", storylink);
-        }
-    }
-
     /// Send pages on given domains to youtube-dl-server
     /// See: https://github.com/manbearwiz/youtube-dl-server
     class YoutubeDownloader : IProcessor
@@ -98,6 +71,7 @@ namespace WallabagReducer.Net
                 return;
             }
 
+            // TODO: Remove this hack once yt-dl-server is stable
             // Already tagged
             // if (item.Tags.Any(t => t.Label == config.tag_name)) {
             //     return;
@@ -105,7 +79,10 @@ namespace WallabagReducer.Net
 
             Console.Write(item.Title.Replace("\n", " "));
 
-            var url = this.Extract_yt_oembed(item.Url);
+            var url = item.OriginalUrl;
+            if(String.IsNullOrWhiteSpace(url)) {
+                url = item.Url;
+            }
 
             // Send DL request to Youtube-DL-Server
             var content = new FormUrlEncodedContent(new[]
