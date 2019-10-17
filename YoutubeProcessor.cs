@@ -22,7 +22,9 @@ namespace WallabagReducer.Net
 
         private HttpClient fetcher = new HttpClient();
 
-        private Regex ytregex = new Regex("(https:\\/\\/www\\.youtube\\.com\\/watch\\?v=[\\-_a-zA-Z0-9]*)");
+        private string[] blacklist = new [] {
+            "youtube.com/oembed"
+        };
 
         class Config
         {
@@ -41,18 +43,6 @@ namespace WallabagReducer.Net
         public YoutubeDownloader(JObject config)
         {
             this.config = config["YoutubeDownloader"].ToObject<Config>();
-        }
-
-        // Extract youtube url from the oembed url that wallabag gives
-        // Workaround for https://github.com/wallabag/wallabag/issues/3638
-        public string Extract_yt_oembed(string url)
-        {
-            var match = ytregex.Match(url);
-            if (match.Success && match.Groups.Count == 2) {
-                return match.Groups[1].Value;
-            } else {
-                return url;
-            }
         }
 
         public async Task Process(WallabagClient client, WallabagItem item)
@@ -82,6 +72,13 @@ namespace WallabagReducer.Net
                 return;
             }
 
+            foreach (var bl in blacklist) {
+                if(url.Contains(bl)) {
+                    Console.WriteLine($"Warning: YoutubeProcessor detected blacklisted pattern; skipping {url}");
+                    return;
+                }
+            }
+
             // TODO: Remove this hack once yt-dl-server is stable
             // Already tagged
             // if (item.Tags.Any(t => t.Label == config.tag_name)) {
@@ -96,21 +93,27 @@ namespace WallabagReducer.Net
                 new KeyValuePair<string, string>("url", url),
                 new KeyValuePair<string, string>("format", config.format),
             });
-            var dl_request = await fetcher.PostAsync(config.youtube_dl_server, content);
-            if (dl_request.StatusCode != System.Net.HttpStatusCode.OK) {
-                Console.WriteLine($" ✗ yt-dl-server returned error response");
-                return;
+
+            try {
+                var dl_request = await fetcher.PostAsync(config.youtube_dl_server, content);
+                if (dl_request.StatusCode != System.Net.HttpStatusCode.OK) {
+                    Console.WriteLine($" ✗ yt-dl-server returned error response");
+                    return;
+                }
+                var response = await dl_request.Content.ReadAsStringAsync();
+                Console.WriteLine(response);
+
+                await client.AddTagsAsync(item, new[] { config.tag_name });
+
+                if (config.mark_read) {
+                    await client.ArchiveAsync(item);
+                }
+
+                Console.WriteLine($" ✓");
             }
-            var response = await dl_request.Content.ReadAsStringAsync();
-            Console.WriteLine(response);
-
-            await client.AddTagsAsync(item, new[] { config.tag_name });
-
-            if (config.mark_read) {
-                await client.ArchiveAsync(item);
+            catch (Exception e) {
+                Console.WriteLine($"Error submitting {url}\n{e.ToString()}\n{e.StackTrace.ToString()}");
             }
-
-            Console.WriteLine($" ✓");
         }
     }
 }
