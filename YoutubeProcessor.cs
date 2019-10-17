@@ -58,10 +58,21 @@ namespace WallabagReducer.Net
         public async Task Process(WallabagClient client, WallabagItem item)
         {
             bool filter_match = false;
+            String url = null;
             foreach (var filter in config.url_filter)
             {
+                // Prefer matches on OriginalUrl
+                if (!String.IsNullOrWhiteSpace(item.OriginalUrl) && item.OriginalUrl.Contains(filter)) {
+                    filter_match = true;
+                    url = item.OriginalUrl;
+
+                    break;
+                }
+
                 if (item.Url.Contains(filter)) {
                     filter_match = true;
+                    url = item.Url;
+
                     break;
                 }
             }
@@ -78,11 +89,6 @@ namespace WallabagReducer.Net
             // }
 
             Console.Write(item.Title.Replace("\n", " "));
-
-            var url = item.OriginalUrl;
-            if(String.IsNullOrWhiteSpace(url)) {
-                url = item.Url;
-            }
 
             // Send DL request to Youtube-DL-Server
             var content = new FormUrlEncodedContent(new[]
