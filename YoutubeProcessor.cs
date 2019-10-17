@@ -22,10 +22,15 @@ namespace WallabagReducer.Net
 
         private HttpClient fetcher = new HttpClient();
 
-        private Regex oembedregex = new Regex("(https:\\/\\/www\\.youtube\\.com\\/watch\\?v=[\\-_a-zA-Z0-9]*)");
+        private Regex lastditchregex = new Regex("(https:\\/\\/www\\.youtube\\.com\\/watch\\?v=[\\-_a-zA-Z0-9]*)");
 
         private string[] blacklist = new [] {
-            "youtube.com/oembed"
+            // ytdl can't download these
+            "youtube.com/oembed",
+
+            // ytdl-server will try to download the whole list
+            // may get last-ditch extracted
+            "list=",
         };
 
         class Config
@@ -49,9 +54,9 @@ namespace WallabagReducer.Net
 
         // Extract youtube url from the oembed url that wallabag gives
         // Workaround for https://github.com/wallabag/wallabag/issues/3638
-        private string extract_yt_oembed(string url)
+        private string extract_yt_lastditch(string url)
         {
-            var match = this.oembedregex.Match(url);
+            var match = this.lastditchregex.Match(url);
             if (match.Success && match.Groups.Count == 2) {
                 return match.Groups[1].Value;
             } else {
@@ -89,7 +94,7 @@ namespace WallabagReducer.Net
             foreach (var bl in blacklist) {
                 if(url.Contains(bl)) {
                     var oldurl = url;
-                    url = extract_yt_oembed(url);
+                    url = extract_yt_lastditch(url);
 
                     if(url == null) {
                         Console.WriteLine($"Warning: YoutubeProcessor detected blacklisted pattern; skipping {oldurl}");
