@@ -89,6 +89,11 @@ namespace WallabagReducer.Net
                     new Uri(content_url),
                     tags: new string[] { "hacker-news" }
                 );
+                if (newItem == null) {
+                    Console.Write("Failed to extract HN article: article add call failed");
+                    return null;
+                }
+
                 Console.WriteLine(" ✓");
                 if (newItem.Url != content_url)
                 {
