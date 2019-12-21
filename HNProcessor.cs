@@ -90,7 +90,7 @@ namespace WallabagReducer.Net
                     tags: new string[] { "hacker-news" }
                 );
                 if (newItem == null) {
-                    Console.Write("Failed to extract HN article: article add call failed");
+                    Console.WriteLine("\nFailed to extract HN article: article add call failed");
                     return null;
                 }
 
