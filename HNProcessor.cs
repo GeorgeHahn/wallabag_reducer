@@ -91,6 +91,7 @@ namespace WallabagReducer.Net
                 );
                 if (newItem == null) {
                     Console.WriteLine("\nFailed to extract HN article: article add call failed");
+                    Console.WriteLine($"\nURI: {content_url}");
                     return null;
                 }
 
